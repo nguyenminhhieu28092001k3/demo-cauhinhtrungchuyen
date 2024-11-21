@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const {DataTypes} = require('sequelize');
 const sequelize = require('../../lib/database');
 
 const GridCell = sequelize.define('GridCell', {
@@ -28,6 +28,14 @@ const GridCell = sequelize.define('GridCell', {
         allowNull: false,
     },
     yMax: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
+    latitude: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
+    longitude: {
         type: DataTypes.DOUBLE,
         allowNull: false,
     },

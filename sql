@@ -8,4 +8,12 @@ CREATE TABLE `grid_cells` (
   `yMax` double NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `gridX` (`gridX`,`gridY`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE `grid_cells`
+ADD COLUMN `latitude` DOUBLE NOT NULL,
+ADD COLUMN `longitude` DOUBLE NOT NULL;
+
+
+SELECT CONCAT(latitude,  ',', longitude) FROM `grid_cells`;

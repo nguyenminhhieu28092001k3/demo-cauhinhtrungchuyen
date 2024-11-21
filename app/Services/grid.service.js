@@ -26,17 +26,24 @@ class GridService {
         return { gridX, gridY };
     }
 
-    // Lưu thông tin ô lưới vào cơ sở dữ liệu
+    // Lưu thông tin ô lưới vào cơ sở dữ liệu, bao gồm tọa độ tâm
     async saveGridCell(gridX, gridY, xMin, yMin, xMax, yMax) {
         try {
-            // Tìm hoặc tạo ô lưới
+            // Tính tọa độ tâm trong hệ UTM
+            const utmXCenter = (xMin + xMax) / 2;
+            const utmYCenter = (yMin + yMax) / 2;
+
+            // Chuyển đổi tọa độ tâm từ UTM sang WGS84
+            const [longitude, latitude] = proj4(this.utmZone, this.wgs84, [utmXCenter, utmYCenter]);
+
+            // Tìm hoặc tạo ô lưới với tọa độ tâm
             const [gridCell, created] = await GridCell.findOrCreate({
                 where: { gridX, gridY },
-                defaults: { xMin, yMin, xMax, yMax },
+                defaults: { xMin, yMin, xMax, yMax, latitude, longitude },
             });
 
             if (created) {
-                console.log(`Ô lưới (${gridX}, ${gridY}) đã được tạo.`);
+                console.log(`Ô lưới (${gridX}, ${gridY}) đã được tạo với tâm tại (${latitude}, ${longitude}).`);
             } else {
                 console.log(`Ô lưới (${gridX}, ${gridY}) đã tồn tại.`);
             }
@@ -44,6 +51,7 @@ class GridService {
             console.error(`Lỗi khi lưu ô lưới (${gridX}, ${gridY}):`, error);
         }
     }
+
 
     // Tạo và lưu các ô lưới dựa trên phạm vi tọa độ
     async generateGridAndSave() {
@@ -65,7 +73,7 @@ class GridService {
                 const yMax = yMin + this.gridSize;
 
                 // Lưu ô lưới vào cơ sở dữ liệu
-                await this.saveGridCell(gridX, gridY, xMin, yMin, xMax, yMax);
+                this.saveGridCell(gridX, gridY, xMin, yMin, xMax, yMax);
             }
         }
 

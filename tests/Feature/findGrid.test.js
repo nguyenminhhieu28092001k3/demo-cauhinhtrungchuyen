@@ -9,9 +9,8 @@ const gridSize = 100;
 
 const findGridService = new FindGridService(wgs84, utmZone48N, gridSize);
 
-const latitude = 10.823485;
-const longitude = 106.635601;
-
+const latitude = 10.823360;
+const longitude = 106.636676;
 
 const [utmX, utmY] = findGridService.convertLatLongToUTM(latitude, longitude);
 console.log(`Tọa độ UTM của điểm: X = ${utmX}, Y = ${utmY}`);
