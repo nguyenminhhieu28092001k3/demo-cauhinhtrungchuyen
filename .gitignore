@@ -63,3 +63,5 @@ nohup.out
 
 /supervisord*
 *.gitkeep
+
+.env

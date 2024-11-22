@@ -1,4 +1,5 @@
-const GridService = require('../../app/Services/grid.service');
+require('dotenv').config({path: '../../.env'});
+const GridService = require('../../app/Services/Geo/grid.service');
 
 (async () => {
 

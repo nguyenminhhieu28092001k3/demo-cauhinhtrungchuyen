@@ -1,0 +1,29 @@
+CREATE TABLE `grid_cells` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `gridX` int(11) NOT NULL,
+  `gridY` int(11) NOT NULL,
+  `xMin` double NOT NULL,
+  `yMin` double NOT NULL,
+  `xMax` double NOT NULL,
+  `yMax` double NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gridX` (`gridX`,`gridY`)
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8;
+
+ALTER TABLE `grid_cells`
+ADD COLUMN `latitude` DOUBLE NOT NULL,
+ADD COLUMN `longitude` DOUBLE NOT NULL;
+
+
+CREATE TABLE `distances` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pickup_location_id` int(11) NOT NULL COMMENT 'A',
+  `grid_cell_id` int(11) NOT NULL COMMENT 'B',
+  `distance` float NOT NULL COMMENT 'Khoảng cách A -> B (m)',
+  `reverse_distance` float NOT NULL COMMENT 'B -> A (m)',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_pickup_location_id` (`pickup_location_id`),
+  KEY `idx_grid_cell_id` (`grid_cell_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

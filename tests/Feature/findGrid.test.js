@@ -1,12 +1,12 @@
+require('dotenv').config({path: '../../.env'});
 const {convertWGS84ToUTM} = require('../../app/Helpers/base.helper')
-const FindGridService = require('../../app/Services/findGrid.service');
+const FindGridService = require('../../app/Services/Geo/findGrid.service');
 
+const wgs84 = process.env.WGS84;
+const utmZone = process.env.UTM_ZONE;
+const gridSize = process.env.GRID_SIZE;
 
-const wgs84 = "EPSG:4326";
-const utmZone48N = "EPSG:32648";
-const gridSize = 100;
-
-const findGridService = new FindGridService(wgs84, utmZone48N, gridSize);
+const findGridService = new FindGridService(wgs84, utmZone, gridSize);
 
 const latitude = 10.823069;
 const longitude = 106.634801;

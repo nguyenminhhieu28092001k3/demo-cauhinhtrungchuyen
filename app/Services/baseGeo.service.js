@@ -1,11 +1,15 @@
 const proj4 = require("proj4");
 
-// Định nghĩa class FindGridService
-class FindGridService {
-    constructor(wgs84, utmZone, gridSize) {
+class BaseGeoService {
+
+    // Cung Độ trên Bề Mặt Địa Cầu (Arc Degree on Earth's Surface)
+    static ArcDegreeOnEarthSurface = 111000;
+
+    constructor(wgs84, utmZone, gridSize, bounds = null) {
         this.wgs84 = wgs84;
         this.utmZone = utmZone;
         this.gridSize = gridSize;
+        this.bounds = bounds;
     }
 
     // Phương thức chuyển đổi từ tọa độ địa lý (latitude, longitude) sang UTM
@@ -17,9 +21,8 @@ class FindGridService {
     getGridIndex(utmX, utmY) {
         const gridX = Math.floor(utmX / this.gridSize);
         const gridY = Math.floor(utmY / this.gridSize);
-        return { gridX, gridY };
+        return {gridX, gridY};
     }
 }
 
-
-module.exports = FindGridService;
+module.exports = BaseGeoService;
