@@ -9,7 +9,7 @@ class DistanceService extends BaseGeoService {
     constructor(wgs84, utmZone, gridSize, googleApiKey) {
         super(wgs84, utmZone, gridSize);
         this.googleApiKey = googleApiKey;
-        this.searchRadius = 10000;
+        this.searchRadius = 7000;
     }
 
     calculateStraightLineDistance(lat1, lon1, lat2, lon2) {
@@ -124,13 +124,13 @@ class DistanceService extends BaseGeoService {
 
                 try {
                     const distance = await this.fetchDrivingDistance(origin, destination);
-                    const reverseDistance = await this.fetchDrivingDistance(destination, origin);
+                    //const reverseDistance = await this.fetchDrivingDistance(destination, origin);
 
                     await Distance.create({
                         pickup_location_id: pickupLocation.id,
                         grid_cell_id: gridCell.id,
                         distance,
-                        reverse_distance: reverseDistance,
+                        //reverse_distance: reverseDistance,
                         created_at: Date.now(),
                     });
 

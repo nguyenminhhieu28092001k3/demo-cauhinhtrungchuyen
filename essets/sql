@@ -27,3 +27,7 @@ CREATE TABLE `distances` (
   KEY `idx_pickup_location_id` (`pickup_location_id`),
   KEY `idx_grid_cell_id` (`grid_cell_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE distances`
+MODIFY COLUMN `reverse_distance` float NULL COMMENT 'B -> A (m)' AFTER `distance`;

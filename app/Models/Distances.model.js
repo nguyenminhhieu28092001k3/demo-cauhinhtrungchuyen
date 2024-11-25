@@ -24,7 +24,7 @@ const Distance = sequelize.define('Distance', {
     },
     reverse_distance: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
         comment: 'B -> A (m)',
     },
     created_at: {

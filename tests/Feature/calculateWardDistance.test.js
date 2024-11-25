@@ -25,7 +25,7 @@ const {Sequelize} = require('sequelize');
         // return;
 
 
-        const pickupLocationId = 1;
+        const pickupLocationId = 2;
         await distanceService.calculateAndSaveDistances(pickupLocationId);
 
         console.log('Distance calculation and saving completed successfully.');
