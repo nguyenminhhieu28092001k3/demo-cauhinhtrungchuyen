@@ -22,7 +22,7 @@ const handleGenerateCommand  = async (args) => {
 
     const wgs84 = process.env.WGS84;
     const utmZone = process.env.UTM_ZONE;
-    const gridSize = process.env.GRID_SIZE;
+    const gridSize = parseInt(process.env.GRID_SIZE);
 
     await controller.generateAndSaveGrid(
         wgs84,

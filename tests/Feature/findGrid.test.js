@@ -4,7 +4,7 @@ const FindGridService = require('../../app/Services/Geo/findGrid.service');
 
 const wgs84 = process.env.WGS84;
 const utmZone = process.env.UTM_ZONE;
-const gridSize = process.env.GRID_SIZE;
+const gridSize = parseInt(process.env.GRID_SIZE);
 
 const findGridService = new FindGridService(wgs84, utmZone, gridSize);
 

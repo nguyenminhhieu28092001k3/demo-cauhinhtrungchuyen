@@ -7,7 +7,7 @@ const {Sequelize} = require('sequelize');
         const googleApiKey = process.env.GOOGLE_MAP_KEY;
         const wgs84 = process.env.WGS84;
         const utmZone = process.env.UTM_ZONE;
-        const gridSize = process.env.GRID_SIZE;
+        const gridSize = parseInt(process.env.GRID_SIZE);
 
         const distanceService = new DistanceService(wgs84, utmZone, gridSize, googleApiKey);
 

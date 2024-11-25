@@ -6,7 +6,7 @@ const GridService = require('../../app/Services/Geo/grid.service');
     const wgs84 = process.env.WGS84;
     const utmZone = process.env.UTM_ZONE;
 
-    const gridSize = process.env.GRID_SIZE; // 100m x 100m
+    const gridSize = parseInt(process.env.GRID_SIZE); // 100m x 100m
     const bounds = {
         latMin: 10.5256,
         latMax: 11.0410,
