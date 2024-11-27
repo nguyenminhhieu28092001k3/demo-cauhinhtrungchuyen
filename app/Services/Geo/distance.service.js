@@ -29,7 +29,7 @@ class DistanceService extends BaseGeoService {
 
     async fetchDrivingDistance(origin, destination) {
 
-        if (process.env.IS_CALL_GOOGLE_MAP == 'false') {
+        if (process.env.IS_CALL_GOOGLE_MAP === 'false') {
 
             const [lat1, lon1] = origin.split(',').map(Number);
             const [lat2, lon2] = destination.split(',').map(Number);
@@ -51,7 +51,7 @@ class DistanceService extends BaseGeoService {
             ) {
                 return response.data.rows[0].elements[0].distance.value; // Khoảng cách (m)
             } else {
-                throw new Error('Distance data not available.');
+                return 0;
             }
         } catch (error) {
             console.error(`Error fetching driving distance:`, error.message);
@@ -119,6 +119,8 @@ class DistanceService extends BaseGeoService {
         const origin = `${pickupLocation.latitude},${pickupLocation.longitude}`;
 
         const handleGridCells = async (gridCells) => {
+            const distanceData = [];
+
             for (const gridCell of gridCells) {
                 const destination = `${gridCell.latitude},${gridCell.longitude}`;
 
@@ -126,23 +128,32 @@ class DistanceService extends BaseGeoService {
                     const distance = await this.fetchDrivingDistance(origin, destination);
                     //const reverseDistance = await this.fetchDrivingDistance(destination, origin);
 
-                    await Distance.create({
+                    distanceData.push({
                         pickup_location_id: pickupLocation.id,
                         grid_cell_id: gridCell.id,
                         distance,
                         //reverse_distance: reverseDistance,
-                        created_at: Date.now(),
+                        created_at: new Date(),
                     });
 
                     console.log(
-                        `Saved distance between PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}).`
+                        `Prepared distance data for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}).`
                     );
                 } catch (error) {
                     console.error(
-                        `Error calculating or saving distance for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}):`,
+                        `Error calculating distance for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}):`,
                         error.message
                     );
                 }
+            }
+
+            try {
+                if (distanceData.length > 0) {
+                    await Distance.bulkCreate(distanceData);
+                    console.log(`Saved ${distanceData.length} distance records in bulk.`);
+                }
+            } catch (error) {
+                console.error("Error saving distance data in bulk:", error.message);
             }
         };
 

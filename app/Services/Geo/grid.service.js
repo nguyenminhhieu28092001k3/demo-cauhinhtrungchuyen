@@ -9,50 +9,64 @@ class GridService extends BaseGeoService {
         super(wgs84, utmZone, gridSize, bounds);
     }
 
-    async saveGridCell(gridX, gridY, xMin, yMin, xMax, yMax) {
+    async saveGridCells(gridCells) {
         try {
-            // Tính tọa độ tâm trong hệ UTM
-            const utmXCenter = (xMin + xMax) / 2;
-            const utmYCenter = (yMin + yMax) / 2;
-
-            // Chuyển đổi tọa độ tâm từ UTM sang WGS84
-            const [longitude, latitude] = proj4(this.utmZone, this.wgs84, [utmXCenter, utmYCenter]);
-
-            // Tìm hoặc tạo ô lưới với tọa độ tâm
-            const [gridCell, created] = await GridCell.findOrCreate({
-                where: {gridX, gridY},
-                defaults: {xMin, yMin, xMax, yMax, latitude, longitude},
+            await GridCell.bulkCreate(gridCells, {
+                updateOnDuplicate: ["xMin", "yMin", "xMax", "yMax", "latitude", "longitude"],
             });
 
-            if (created) {
-                console.log(`Ô lưới (${gridX}, ${gridY}) đã được tạo với tâm tại (${latitude}, ${longitude}).`);
-            } else {
-                console.log(`Ô lưới (${gridX}, ${gridY}) đã tồn tại.`);
-            }
+            console.log(`Đã lưu ${gridCells.length} ô lưới.`);
         } catch (error) {
-            console.error(`Lỗi khi lưu ô lưới (${gridX}, ${gridY}):`, error);
+            console.error("Lỗi khi lưu các ô lưới:", error);
         }
     }
 
+
     async generateGridAndSave() {
-        const {latMin, latMax, longMin, longMax} = this.bounds;
+        const { latMin, latMax, longMin, longMax } = this.bounds;
 
         // VD: 500m = 500 / 111000 = 0.0045 độ
-        var step = Number((this.gridSize / GridService.ArcDegreeOnEarthSurface).toFixed(4));
+        const step = Number((this.gridSize / GridService.ArcDegreeOnEarthSurface).toFixed(4));
+
+        let gridCells = []; // Mảng chứa dữ liệu các ô lưới
+        const batchSize = 1000;
 
         for (let lat = latMin; lat <= latMax; lat += step) {
             for (let long = longMin; long <= longMax; long += step) {
-
                 const [utmX, utmY] = this.convertLatLongToUTM(lat, long);
 
-                const {gridX, gridY} = this.getGridIndex(utmX, utmY);
+                const { gridX, gridY } = this.getGridIndex(utmX, utmY);
                 const xMin = gridX * this.gridSize;
                 const yMin = gridY * this.gridSize;
                 const xMax = xMin + this.gridSize;
                 const yMax = yMin + this.gridSize;
 
-                await this.saveGridCell(gridX, gridY, xMin, yMin, xMax, yMax);
+                const utmXCenter = (xMin + xMax) / 2;
+                const utmYCenter = (yMin + yMax) / 2;
+
+                const [longitude, latitude] = proj4(this.utmZone, this.wgs84, [utmXCenter, utmYCenter]);
+
+                gridCells.push({
+                    gridX,
+                    gridY,
+                    xMin,
+                    yMin,
+                    xMax,
+                    yMax,
+                    latitude,
+                    longitude,
+                });
+
+
+                if (gridCells.length >= batchSize) {
+                    await this.saveGridCells(gridCells);
+                    gridCells = [];
+                }
             }
+        }
+
+        if (gridCells.length > 0) {
+            await this.saveGridCells(gridCells);
         }
 
         console.log("Đã hoàn thành việc chia và lưu các ô lưới.");
