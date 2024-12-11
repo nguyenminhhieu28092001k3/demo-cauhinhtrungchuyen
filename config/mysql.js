@@ -1,3 +1,4 @@
+const {logToFile} = require('../app/Helpers/base.helper')
 module.exports.option = {
     host: 'localhost',
     dialect: 'mysql',
@@ -10,7 +11,8 @@ module.exports.option = {
     retry: {
         // match: [/Deadlock/i, /Connection lost/i],
         max: 3,  // Số lần thử lại khi lỗi kết nối
-    }
+    },
+    logging: logToFile,
 };
 module.exports.DATABASE = 'hasakinow_db';
 module.exports.USERNAME = 'root';

@@ -86,8 +86,17 @@ const argv = yargs
 
 
 // 1. Tạo ô
-// VD: node grid.js generate -b "10.5256,11.0410,106.4616,107.0247"
+// VD: node grid.js generate -b "15.9085,16.2193,107.7896,108.3424"
 
 //2. Tính khoảng cách
 // VD: node grid.js calculateDistances -p 1
 
+
+// List pickup đà nẵng
+// 80
+// 630
+// 695
+// 987
+// 989
+// 1042
+// 1087

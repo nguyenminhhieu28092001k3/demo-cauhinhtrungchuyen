@@ -1,12 +1,23 @@
 const proj4 = require("proj4");
+const fs = require('fs');
+const path = require('path');
 
-/**
- * Hàm chuyển đổi từ tọa độ WGS84 sang tọa độ UTM.
- * @param {number} latitude - Vĩ độ (latitude) theo WGS84.
- * @param {number} longitude - Kinh độ (longitude) theo WGS84.
- * @param {string} utmZone - EPSG code của hệ UTM (ví dụ: "EPSG:32633" cho Zone 33N).
- * @returns {object} - Tọa độ UTM với định dạng { x, y }.
- */
+function getVietnamTime() {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    });
+
+    const formatted = formatter.format(now);
+    return formatted.replace(',', ''); // Kết quả: "dd/mm/yyyy HH:mm:ss"
+}
+
 function convertWGS84ToUTM(latitude, longitude, utmZone) {
     // Định nghĩa hệ tọa độ WGS84 và UTM zone
     const wgs84 = proj4("EPSG:4326");
@@ -17,6 +28,32 @@ function convertWGS84ToUTM(latitude, longitude, utmZone) {
 
     // Trả về kết quả
     return { x, y };
+}
+
+function getLogFilePath() {
+    const date = new Date();
+    const formattedDate = date.toISOString().split('T')[0]; // Lấy ngày dạng YYYY-MM-DD
+    return path.join(__dirname, `../../storage/logs/mysql_logs_${formattedDate}.log`);
+}
+
+function ensureDirectoryExistence(filePath) {
+    const dirname = path.dirname(filePath);
+    if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+    }
+}
+
+function logToFile(msg) {
+    const logFilePath = getLogFilePath();
+    ensureDirectoryExistence(logFilePath);
+
+    const logMessage = `${getVietnamTime()} - ${msg}\n`;
+
+    fs.appendFile(logFilePath, logMessage, (err) => {
+        if (err) {
+            console.error('Error writing to log file:', err);
+        }
+    });
 }
 
 // Ví dụ sử dụng hàm
@@ -31,5 +68,6 @@ function convertWGS84ToUTM(latitude, longitude, utmZone) {
 
 
 module.exports = {
-    convertWGS84ToUTM
+    convertWGS84ToUTM,
+    logToFile 
 };
