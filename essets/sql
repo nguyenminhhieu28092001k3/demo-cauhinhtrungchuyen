@@ -29,5 +29,5 @@ CREATE TABLE `distances` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-ALTER TABLE distances`
+ALTER TABLE `distances`
 MODIFY COLUMN `reverse_distance` float NULL COMMENT 'B -> A (m)' AFTER `distance`;
