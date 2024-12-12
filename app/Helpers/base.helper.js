@@ -41,7 +41,7 @@ function getLogFilePath(name = 'mysql_logs') {
     }
     const date = new Date();
     const formattedDate = date.toISOString().split('T')[0]; // Lấy ngày dạng YYYY-MM-DD
-    const nameFull =  `${name}_${formattedDate}.log`;
+    const nameFull =  `${formattedDate}_${name}.log`;
     return path.join(__dirname, `../../storage/logs/${nameFull}`);
 }
 

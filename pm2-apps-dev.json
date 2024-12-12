@@ -1,0 +1,18 @@
+{
+  "apps": [
+    {
+      "name": "queue-processor-dev",
+      "script": "./queueProcessor.js",
+      "watch": true,
+      "env": {
+        "NODE_ENV": "local"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "error_file": "./storage/logs/queueProcessor-error.log",
+      "out_file": "./storage/logs/queueProcessor-out.log",
+      "instances": 5,
+      "exec_mode": "cluster",
+      "node_args": "--trace-warnings --max_old_space_size=1024"
+    }
+  ]
+}
