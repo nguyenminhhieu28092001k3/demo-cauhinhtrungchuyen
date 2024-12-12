@@ -3,6 +3,7 @@ const fs = require('fs');
 const {Worker} = require('worker_threads');
 const redisConfig = require('./config/redis')
 const WardTransShipment = require('./app/Models/WardTransShipment.model')
+const {logToFile} = require("./app/Helpers/base.helper");
 require('dotenv').config();
 
 // Cấu hình BeeQueue
