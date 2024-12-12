@@ -48,7 +48,7 @@ class DistanceService extends BaseGeoService {
         }
     }
 
-    async handleGridCells(gridCells, origin){
+    async handleGridCells(gridCells, origin, pickupLocation){
         const distanceData = [];
 
         for (const gridCell of gridCells) {
@@ -85,7 +85,8 @@ class DistanceService extends BaseGeoService {
         }
     };
 
-    async getGridCellsInRange(lat, lon, origin) {
+    async getGridCellsInRange(lat, lon, origin, pickupLocation) {
+
         const chunkSize = 1000;
         let offset = 0;
         let gridCellsInRange = [];
@@ -120,7 +121,7 @@ class DistanceService extends BaseGeoService {
             if (gridCellsInRange.length >= 1000) {
 
                 //console.log(1111 , gridCellsInRange.length);
-                await this.handleGridCells(gridCellsInRange, origin);
+                await this.handleGridCells(gridCellsInRange, origin, pickupLocation);
 
                 gridCellsInRange = [];
                 //break;
@@ -132,7 +133,7 @@ class DistanceService extends BaseGeoService {
         //console.log(2222 , gridCellsInRange.length);
         //return;
         if (gridCellsInRange.length > 0) {
-            await this.handleGridCells(gridCellsInRange, origin);
+            await this.handleGridCells(gridCellsInRange, origin, pickupLocation);
         }
     }
 
@@ -152,7 +153,8 @@ class DistanceService extends BaseGeoService {
         await this.getGridCellsInRange(
             pickupLocation.latitude,
             pickupLocation.longitude,
-            origin
+            origin,
+            pickupLocation
         );
     }
 
