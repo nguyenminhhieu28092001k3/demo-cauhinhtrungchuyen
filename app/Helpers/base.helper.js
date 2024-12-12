@@ -2,6 +2,11 @@ const proj4 = require("proj4");
 const fs = require('fs');
 const path = require('path');
 
+function changePlacesDegrees(toaDo) {
+    let [kinhDo, viDo] = toaDo.split(',');
+    return `${viDo},${kinhDo}`;
+}
+
 function getVietnamTime() {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('vi-VN', {
@@ -30,10 +35,14 @@ function convertWGS84ToUTM(latitude, longitude, utmZone) {
     return { x, y };
 }
 
-function getLogFilePath() {
+function getLogFilePath(name = 'mysql_logs') {
+    if (typeof name === 'object') {
+        name = 'mysql_logs';
+    }
     const date = new Date();
     const formattedDate = date.toISOString().split('T')[0]; // Lấy ngày dạng YYYY-MM-DD
-    return path.join(__dirname, `../../storage/logs/mysql_logs_${formattedDate}.log`);
+    const nameFull =  `${name}_${formattedDate}.log`;
+    return path.join(__dirname, `../../storage/logs/${nameFull}`);
 }
 
 function ensureDirectoryExistence(filePath) {
@@ -43,8 +52,9 @@ function ensureDirectoryExistence(filePath) {
     }
 }
 
-function logToFile(msg) {
-    const logFilePath = getLogFilePath();
+function logToFile(msg, fileName) {
+
+    const logFilePath = getLogFilePath(fileName);
     ensureDirectoryExistence(logFilePath);
 
     const logMessage = `${getVietnamTime()} - ${msg}\n`;
@@ -69,5 +79,6 @@ function logToFile(msg) {
 
 module.exports = {
     convertWGS84ToUTM,
-    logToFile 
+    logToFile,
+    changePlacesDegrees
 };

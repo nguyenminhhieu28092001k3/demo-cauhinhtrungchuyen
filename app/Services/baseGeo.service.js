@@ -1,4 +1,6 @@
 const proj4 = require("proj4");
+const axios = require("axios");
+const {logToFile, changePlacesDegrees} = require("../Helpers/base.helper");
 
 class BaseGeoService {
 
@@ -23,6 +25,62 @@ class BaseGeoService {
         const gridY = Math.floor(utmY / this.gridSize);
         return {gridX, gridY};
     }
+
+    async callDistanceGoogle(origin, destination, googleApiKey = null) {
+
+        try {
+            const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
+                params: {
+                    origins: origin,
+                    destinations: destination,
+                    key: googleApiKey,
+                },
+            });
+
+            logToFile('[INFO][CALL GOOGLE API] ' + JSON.stringify(response?.data), 'call_api');
+
+            if (
+                response?.data?.rows[0]?.elements[0]?.status === 'OK' &&
+                response.data.rows[0].elements[0].distance
+            ) {
+                return response.data.rows[0].elements[0].distance.value; // Khoảng cách (m)
+            } else {
+                return 0;
+            }
+        } catch (error) {
+            logToFile('[ERROR][CALL GOOGLE API] ' + JSON.stringify(response?.data), 'call_api');
+            throw error;
+        }
+    }
+
+    async callOpenStreetMap(origin, destination) {
+        try {
+
+            var pathCreateDegrees = changePlacesDegrees(origin) + ';' + changePlacesDegrees(destination);
+
+            const response = await axios.get('http://router.project-osrm.org/route/v1/driving/'+ pathCreateDegrees, {
+                params: {
+                    overview: false
+                },
+            });
+
+            logToFile('[INFO][CALL STREET MAP] ' + JSON.stringify(response?.data), 'call_api');
+
+            if (
+                response?.data?.code === 'Ok' &&
+                response?.data?.routes[0]?.distance
+            ) {
+                return response.data.routes[0].distance; // Khoảng cách (m)
+            } else {
+                return 0;
+            }
+
+        } catch (error) {
+            logToFile('[ERROR][CALL STREET MAP] ' + JSON.stringify(response?.data), 'call_api');
+            throw error;
+        }
+    }
+
 }
 
 module.exports = BaseGeoService;

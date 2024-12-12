@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `grid_cells`;
 CREATE TABLE `grid_cells` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `gridX` int(11) NOT NULL,
@@ -15,6 +16,7 @@ ADD COLUMN `latitude` DOUBLE NOT NULL,
 ADD COLUMN `longitude` DOUBLE NOT NULL;
 
 
+DROP TABLE IF EXISTS `distances`;
 CREATE TABLE `distances` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pickup_location_id` int(11) NOT NULL COMMENT 'A',
@@ -28,6 +30,21 @@ CREATE TABLE `distances` (
   KEY `idx_grid_cell_id` (`grid_cell_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
 ALTER TABLE `distances`
 MODIFY COLUMN `reverse_distance` float NULL COMMENT 'B -> A (m)' AFTER `distance`;
+
+
+DROP TABLE IF EXISTS `grid_cell_trans_shipments`;
+CREATE TABLE `grid_cell_trans_shipments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `pickup_location_id` int(11) NOT NULL,
+  `grid_cell_id` int(11) NOT NULL,
+  `trans_shipment_id` int(11) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `pickup_location_id_grid_cell_id` (`pickup_location_id`,`grid_cell_id`) USING BTREE,
+  KEY `pickup_location_id_index` (`pickup_location_id`) USING BTREE,
+  KEY `grid_cell_id_index` (`grid_cell_id`) USING BTREE,
+  KEY `trans_shipment_id_index` (`trans_shipment_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -4,6 +4,7 @@ const BaseGeoService = require('../baseGeo.service');
 const Distance = require('../../Models/Distances.model');
 const PickupLocation = require('../../Models/PickupLocation.model');
 const GridCell = require('../../Models/GridCell.model');
+const {logToFile} = require('../../Helpers/base.helper');
 
 class DistanceService extends BaseGeoService {
     constructor(wgs84, utmZone, gridSize, googleApiKey) {
@@ -29,37 +30,62 @@ class DistanceService extends BaseGeoService {
 
     async fetchDrivingDistance(origin, destination) {
 
-        if (process.env.IS_CALL_GOOGLE_MAP === 'false') {
+        switch (process.env.IS_CALL_GET_DISTANCE) {
+            // case 'GOOGLE_MAP' :
+            //     return await this.callDistanceGoogle(origin, destination, this.googleApiKey);
+            //
+            //     break;
+            case 'STRAIGHT_LINE' :
+                const [lat1, lon1] = origin.split(',').map(Number);
+                const [lat2, lon2] = destination.split(',').map(Number);
+                return this.calculateStraightLineDistance(lat1, lon1, lat2, lon2);
 
-            const [lat1, lon1] = origin.split(',').map(Number);
-            const [lat2, lon2] = destination.split(',').map(Number);
-            return this.calculateStraightLineDistance(lat1, lon1, lat2, lon2);
-        }
-        try {
-            const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
-                params: {
-                    origins: origin,
-                    destinations: destination,
-                    key: this.googleApiKey,
-                },
-            });
+                break;
+            case 'OPEN_STREET_MAP' :
+                return this.callOpenStreetMap(origin, destination);
 
-            console.log('[CALL GOOGLE API] ' + response?.data);
-            if (
-                response.data.rows[0].elements[0].status === 'OK' &&
-                response.data.rows[0].elements[0].distance
-            ) {
-                return response.data.rows[0].elements[0].distance.value; // Khoảng cách (m)
-            } else {
-                return 0;
-            }
-        } catch (error) {
-            console.error(`Error fetching driving distance:`, error.message);
-            throw error;
+                break;
         }
     }
 
-    async getGridCellsInRange(lat, lon, handleGridCells) {
+    async handleGridCells(gridCells, origin){
+        const distanceData = [];
+
+        for (const gridCell of gridCells) {
+            const destination = `${gridCell.latitude},${gridCell.longitude}`;
+
+            try {
+                const distance = await this.fetchDrivingDistance(origin, destination);
+                //console.log('distance', origin, destination, distance);break;
+
+                distanceData.push({
+                    pickup_location_id: pickupLocation.id,
+                    grid_cell_id: gridCell.id,
+                    distance,
+                    created_at: new Date(),
+                });
+
+                console.log(
+                    `Prepared distance data for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}).`
+                );
+            } catch (error) {
+                console.error(
+                    `Error calculating distance for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}):`,
+                    error.message
+                );
+            }
+        }
+        try {
+            if (distanceData.length > 0) {
+                await Distance.bulkCreate(distanceData);
+                console.log(`Saved ${distanceData.length} distance records in bulk.`);
+            }
+        } catch (error) {
+            console.error("Error saving distance data in bulk:", error.message);
+        }
+    };
+
+    async getGridCellsInRange(lat, lon, origin) {
         const chunkSize = 1000;
         let offset = 0;
         let gridCellsInRange = [];
@@ -91,17 +117,22 @@ class DistanceService extends BaseGeoService {
 
             gridCellsInRange = gridCellsInRange.concat(filteredCells);
 
-
             if (gridCellsInRange.length >= 1000) {
-                await handleGridCells(gridCellsInRange);
+
+                //console.log(1111 , gridCellsInRange.length);
+                await this.handleGridCells(gridCellsInRange, origin);
+
                 gridCellsInRange = [];
+                //break;
             }
 
             offset += chunkSize;
         }
 
+        //console.log(2222 , gridCellsInRange.length);
+        //return;
         if (gridCellsInRange.length > 0) {
-            await handleGridCells(gridCellsInRange);
+            await this.handleGridCells(gridCellsInRange, origin);
         }
     }
 
@@ -118,49 +149,10 @@ class DistanceService extends BaseGeoService {
 
         const origin = `${pickupLocation.latitude},${pickupLocation.longitude}`;
 
-        const handleGridCells = async (gridCells) => {
-            const distanceData = [];
-
-            for (const gridCell of gridCells) {
-                const destination = `${gridCell.latitude},${gridCell.longitude}`;
-
-                try {
-                    const distance = await this.fetchDrivingDistance(origin, destination);
-                    //const reverseDistance = await this.fetchDrivingDistance(destination, origin);
-
-                    distanceData.push({
-                        pickup_location_id: pickupLocation.id,
-                        grid_cell_id: gridCell.id,
-                        distance,
-                        //reverse_distance: reverseDistance,
-                        created_at: new Date(),
-                    });
-
-                    console.log(
-                        `Prepared distance data for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}).`
-                    );
-                } catch (error) {
-                    console.error(
-                        `Error calculating distance for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}):`,
-                        error.message
-                    );
-                }
-            }
-
-            try {
-                if (distanceData.length > 0) {
-                    await Distance.bulkCreate(distanceData);
-                    console.log(`Saved ${distanceData.length} distance records in bulk.`);
-                }
-            } catch (error) {
-                console.error("Error saving distance data in bulk:", error.message);
-            }
-        };
-
         await this.getGridCellsInRange(
             pickupLocation.latitude,
             pickupLocation.longitude,
-            handleGridCells
+            origin
         );
     }
 

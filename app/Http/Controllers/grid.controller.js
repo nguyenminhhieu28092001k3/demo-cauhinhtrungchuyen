@@ -7,7 +7,7 @@ class GridController {
         const wgs84 = process.env.WGS84;
         const utmZone = process.env.UTM_ZONE;
         const gridSize = parseInt(process.env.GRID_SIZE);
-        const googleApiKey = process.env.GOOGLE_API_KEY;
+        const googleApiKey = process.env.GOOGLE_MAP_KEY;
 
         this.distanceService = new DistanceService(wgs84, utmZone, gridSize, googleApiKey);
     }
