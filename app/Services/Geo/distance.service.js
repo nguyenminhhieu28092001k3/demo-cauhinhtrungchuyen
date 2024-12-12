@@ -42,48 +42,55 @@ class DistanceService extends BaseGeoService {
 
                 break;
             case 'OPEN_STREET_MAP' :
-                return this.callOpenStreetMap(origin, destination);
+                return await this.callOpenStreetMap(origin, destination);
 
                 break;
         }
     }
 
-    async handleGridCells(gridCells, origin, pickupLocation){
-        const distanceData = [];
+    async handleGridCells(gridCells, origin, pickupLocation) {
 
-        for (const gridCell of gridCells) {
+        const distancePromises = gridCells.map(async (gridCell) => {
+
             const destination = `${gridCell.latitude},${gridCell.longitude}`;
-
             try {
                 const distance = await this.fetchDrivingDistance(origin, destination);
-                //console.log('distance', origin, destination, distance);break;
-
-                distanceData.push({
+                console.log(
+                    `Prepared distance data for PickupLocation(${pickupLocation.id}), Distance ${distance} and GridCell(${gridCell.id}).`
+                );
+                return {
                     pickup_location_id: pickupLocation.id,
                     grid_cell_id: gridCell.id,
                     distance,
                     created_at: new Date(),
-                });
-
-                console.log(
-                    `Prepared distance data for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}).`
-                );
+                    updated_at: new Date(),
+                };
             } catch (error) {
                 console.error(
                     `Error calculating distance for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}):`,
-                    error.message
+                    error
                 );
+                return null;
             }
-        }
+        });
+
         try {
+            const resolvedDistances = await Promise.all(distancePromises);
+
+            const distanceData = resolvedDistances.filter((data) => data !== null);
+
             if (distanceData.length > 0) {
-                await Distance.bulkCreate(distanceData);
+
+                await Distance.bulkCreate(distanceData, {
+                    updateOnDuplicate: ['distance', 'updated_at'],
+                });
                 console.log(`Saved ${distanceData.length} distance records in bulk.`);
             }
         } catch (error) {
-            console.error("Error saving distance data in bulk:", error.message);
+            console.error("Error saving distance data in bulk:", error);
         }
-    };
+    }
+
 
     async getGridCellsInRange(lat, lon, origin, pickupLocation) {
 
@@ -122,6 +129,7 @@ class DistanceService extends BaseGeoService {
 
                 //console.log(1111 , gridCellsInRange.length);
                 await this.handleGridCells(gridCellsInRange, origin, pickupLocation);
+                // this.handleGridCells(gridCellsInRange, origin, pickupLocation);
 
                 gridCellsInRange = [];
                 //break;
@@ -134,6 +142,7 @@ class DistanceService extends BaseGeoService {
         //return;
         if (gridCellsInRange.length > 0) {
             await this.handleGridCells(gridCellsInRange, origin, pickupLocation);
+            // this.handleGridCells(gridCellsInRange, origin, pickupLocation);
         }
     }
 

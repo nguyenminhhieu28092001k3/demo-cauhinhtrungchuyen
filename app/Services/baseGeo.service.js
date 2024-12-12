@@ -55,10 +55,9 @@ class BaseGeoService {
 
     async callOpenStreetMap(origin, destination) {
         try {
+            const pathCreateDegrees = changePlacesDegrees(origin) + ';' + changePlacesDegrees(destination);
 
-            var pathCreateDegrees = changePlacesDegrees(origin) + ';' + changePlacesDegrees(destination);
-
-            const response = await axios.get('http://router.project-osrm.org/route/v1/driving/'+ pathCreateDegrees, {
+            const response = await axios.get('http://router.project-osrm.org/route/v1/driving/' + pathCreateDegrees, {
                 params: {
                     overview: false
                 },
@@ -70,16 +69,25 @@ class BaseGeoService {
                 response?.data?.code === 'Ok' &&
                 response?.data?.routes[0]?.distance
             ) {
-                return response.data.routes[0].distance; // Khoảng cách (m)
+                return response.data.routes[0].distance ?? 0; // Khoảng cách (m)
             } else {
                 return 0;
             }
 
         } catch (error) {
-            logToFile('[ERROR][CALL STREET MAP] ' + JSON.stringify(response?.data), 'call_api');
+            logToFile(
+                '[ERROR][CALL STREET MAP] ' +
+                + origin + " " + destination +
+                JSON.stringify({
+                    message: error.message,
+                    stack: error.stack,
+                }),
+                'call_api'
+            );
             throw error;
         }
     }
+
 
 }
 

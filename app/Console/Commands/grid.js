@@ -93,10 +93,10 @@ const argv = yargs
 
 
 // List pickup đà nẵng
-// 80
-// 630
-// 695
-// 987
-// 989
-// 1042
-// 1087
+// node grid.js calculateDistances -p 80
+// node grid.js calculateDistances -p 630
+// node grid.js calculateDistances -p 695
+// node grid.js calculateDistances -p 987
+// node grid.js calculateDistances -p 989
+// node grid.js calculateDistances -p 1042
+// node grid.js calculateDistances -p 1087

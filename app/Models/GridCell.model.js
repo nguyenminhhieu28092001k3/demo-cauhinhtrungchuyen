@@ -46,6 +46,7 @@ const GridCell = sequelize.define('GridCell', {
         {
             name: 'grid_cells_gridX_gridY_index',
             using: 'BTREE',
+            unique: true,
             fields: ['gridX', 'gridY'],
         },
     ],
