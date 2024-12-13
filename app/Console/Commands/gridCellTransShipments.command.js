@@ -5,12 +5,18 @@ const redisConfig = require('../../../config/redis');
 const transShipmentsQueue = require('../../Queues/transShipments.queue');
 const Distances = require('../../Models/Distances.model');
 const { logToFile } = require("../../Helpers/base.helper");
+const CacheHelper = require('../../Helpers/cache.helper');
 
 async function addDistancesToQueue(args) {
     let offset = 0;
     let hasMoreData = true;
     let batchSize = 1000;
     let pickupId = args.pickupId ?? null;
+
+    await CacheHelper.clearCache('distances');
+    await CacheHelper.clearCache('pickupLocationDistances');
+    await CacheHelper.clearCache('pickupLocations');
+    await CacheHelper.clearCache('wards');
 
     try {
         while (hasMoreData) {

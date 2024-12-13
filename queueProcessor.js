@@ -12,9 +12,9 @@ const queue = new BeeQueue('transShipments', {
     removeOnSuccess: true
 });
 
-function runHeavyComputationInWorker(receiverWardId, pickupLocationId) {
+function runHeavyComputationInWorker(gridCellId, pickupLocationId) {
     return new Promise((resolve, reject) => {
-        const worker = new Worker('./app/Workers/worker.js', {workerData: {receiverWardId, pickupLocationId}});
+        const worker = new Worker('./app/Workers/worker.js', {workerData: {gridCellId, pickupLocationId}});
 
         worker.on('message', (result) => {
             worker.terminate();
@@ -33,7 +33,7 @@ function runHeavyComputationInWorker(receiverWardId, pickupLocationId) {
     });
 }
 
-queue.process(5, async (job) => {
+queue.process(1, async (job) => {
     try {
         let start = Date.now();
 

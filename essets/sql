@@ -37,3 +37,7 @@ CREATE TABLE `grid_cell_trans_shipments` (
   UNIQUE KEY `pickup_location_id_grid_cell_id_index` (`pickup_location_id`,`grid_cell_id`) USING BTREE,
   KEY `trans_shipment_id_index` (`trans_shipment_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `distances`
+ADD INDEX `grid_cell_id_index`(`grid_cell_id` ASC) USING BTREE,
+ADD INDEX `pickup_location_id_index`(`pickup_location_id` ASC) USING BTREE;
