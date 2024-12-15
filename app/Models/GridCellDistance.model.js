@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../lib/database');
 
-const Distance = sequelize.define('Distance', {
+const GridCellDistance = sequelize.define('grid_cell_distance', {
     id: {
         type: DataTypes.INTEGER.UNSIGNED,
         autoIncrement: true,
@@ -33,7 +33,7 @@ const Distance = sequelize.define('Distance', {
         defaultValue: null,
     },
 }, {
-    tableName: 'distances',
+    tableName: 'grid_cell_distances',
     timestamps: false,
     indexes: [
         {
@@ -45,4 +45,4 @@ const Distance = sequelize.define('Distance', {
     ],
 });
 
-module.exports = Distance;
+module.exports = GridCellDistance;

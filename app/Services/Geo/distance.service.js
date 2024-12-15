@@ -1,7 +1,7 @@
 const axios = require('axios');
 const {Op} = require('sequelize');
 const BaseGeoService = require('../baseGeo.service');
-const Distance = require('../../Models/Distances.model');
+const GridCellDistance = require('../../Models/GridCellDistance.model');
 const PickupLocation = require('../../Models/PickupLocation.model');
 const GridCell = require('../../Models/GridCell.model');
 const {logToFile} = require('../../Helpers/base.helper');
@@ -81,7 +81,7 @@ class DistanceService extends BaseGeoService {
 
             if (distanceData.length > 0) {
 
-                await Distance.bulkCreate(distanceData, {
+                await GridCellDistance.bulkCreate(distanceData, {
                     updateOnDuplicate: ['distance', 'updated_at'],
                 });
                 console.log(`Saved ${distanceData.length} distance records in bulk.`);
@@ -146,7 +146,7 @@ class DistanceService extends BaseGeoService {
         }
     }
 
-    async calculateAndSaveDistances(pickupLocationId) {
+    async calculateAndSaveGridCellDistances(pickupLocationId) {
 
         const pickupLocation = await PickupLocation.findByPk(pickupLocationId, {
             attributes: ['id', 'latitude', 'longitude'],

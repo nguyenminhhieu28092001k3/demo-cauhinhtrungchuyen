@@ -3,17 +3,17 @@ require('dotenv').config({path: '../../../.env'});
 const Queue = require('bee-queue');
 const redisConfig = require('../../../config/redis');
 const transShipmentsQueue = require('../../Queues/transShipments.queue');
-const Distances = require('../../Models/Distances.model');
+const GridCellDistance = require('../../Models/GridCellDistance.model');
 const { logToFile } = require("../../Helpers/base.helper");
 const CacheHelper = require('../../Helpers/cache.helper');
 
-async function addDistancesToQueue(args) {
+async function addGridCellDistancesToQueue(args) {
     let offset = 0;
     let hasMoreData = true;
     let batchSize = 1000;
     let pickupId = args.pickupId ?? null;
 
-    await CacheHelper.clearCache('distances');
+    await CacheHelper.clearCache('gridCellDistances');
     await CacheHelper.clearCache('pickupLocationDistances');
     await CacheHelper.clearCache('pickupLocations');
     await CacheHelper.clearCache('wards');
@@ -25,7 +25,7 @@ async function addDistancesToQueue(args) {
                 ? { pickup_location_id: pickupId }
                 : {};
 
-            const lstDistances = await Distances.findAll({
+            const lstGridCellDistances = await GridCellDistance.findAll({
                 raw: true,
                 attributes: ['grid_cell_id', 'pickup_location_id'],
                 where: whereCondition,
@@ -33,28 +33,28 @@ async function addDistancesToQueue(args) {
                 offset: offset,
             });
 
-            if (lstDistances.length === 0) {
+            if (lstGridCellDistances.length === 0) {
                 hasMoreData = false;
                 break;
             }
 
-            const jobPromises = lstDistances.map((distance) => {
+            const jobPromises = lstGridCellDistances.map((gridCellDistance) => {
                 return transShipmentsQueue.createJob({
-                    grid_cell_id: distance.grid_cell_id,
-                    pickup_location_id: distance.pickup_location_id,
+                    grid_cell_id: gridCellDistance.grid_cell_id,
+                    pickup_location_id: gridCellDistance.pickup_location_id,
                 })
                     .save()
                     .then((job) => {
                         logToFile(
-                            '[INFO][addDistancesToQueue] ' +
-                            `Job created with id: ${job.id} for grid cell ${distance.grid_cell_id} and pickup location ${distance.pickup_location_id}`,
-                            'add_distances_to_queue'
+                            '[INFO][addGridCellDistancesToQueue] ' +
+                            `Job created with id: ${job.id} for grid cell ${gridCellDistance.grid_cell_id} and pickup location ${gridCellDistance.pickup_location_id}`,
+                            'add_grid_cell_distances_to_queue'
                         );
                     })
                     .catch((error) => {
                         logToFile(
-                            '[ERROR][addDistancesToQueue] Failed to create job:' + JSON.stringify(error),
-                            'add_distances_to_queue'
+                            '[ERROR][addGridCellDistancesToQueue] Failed to create job:' + JSON.stringify(error),
+                            'add_grid_cell_distances_to_queue'
                         );
                     });
             });
@@ -64,11 +64,11 @@ async function addDistancesToQueue(args) {
             offset += batchSize;
         }
 
-        logToFile('[INFO][addDistancesToQueue] All distances have been processed', 'add_distances_to_queue');
-        console.log('[INFO][addDistancesToQueue] All distances have been processed');
+        logToFile('[INFO][addGridCellDistancesToQueue] All distances have been processed', 'add_distances_to_queue');
+        console.log('[INFO][addGridCellDistancesToQueue] All distances have been processed');
         process.exit();
     } catch (error) {
-        logToFile('[ERROR][addDistancesToQueue] Error processing distances:' + JSON.stringify(error), 'add_distances_to_queue');
+        logToFile('[ERROR][addGridCellDistancesToQueue] Error processing distances:' + JSON.stringify(error), 'add_distances_to_queue');
     }
 }
 
@@ -88,7 +88,7 @@ const argv = yargs
                 demandOption: false,
             });
         },
-        addDistancesToQueue
+        addGridCellDistancesToQueue
     )
     .help()
     .alias("help", "h")

@@ -30,20 +30,22 @@ const handleGenerateCommand  = async (args) => {
         gridSize,
         bounds
     );
+    process.exit();
 }
 
-const handleCalculateDistances = async (args) => {
+const handleCalculateGridCellDistances = async (args) => {
     const controller = new GridController();
     const pickupLocationId = args.pickupId;
 
     try {
-        await controller.calculateAndSaveDistances(pickupLocationId);
+        await controller.calculateAndSaveGridCellDistances(pickupLocationId);
         console.log(
-            `Successfully calculated and saved distances for PickupLocation ID: ${pickupLocationId}`
+            `Successfully calculated and saved grid cell distances for PickupLocation ID: ${pickupLocationId}`
         );
+        process.exit();
     } catch (error) {
         console.error(
-            `Error while calculating distances for PickupLocation ID ${pickupLocationId}:`,
+            `Error while calculating grid cell distances for PickupLocation ID ${pickupLocationId}:`,
             error.message
         );
     }
@@ -77,7 +79,7 @@ const argv = yargs
                 demandOption: true,
             });
         },
-        handleCalculateDistances
+        handleCalculateGridCellDistances
     )
     .help()
     .alias("help", "h")

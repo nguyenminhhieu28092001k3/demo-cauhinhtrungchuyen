@@ -13,8 +13,8 @@ CREATE TABLE `grid_cells` (
   UNIQUE KEY `gridx_gridy_index` (`gridX`,`gridY`)  USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `distances`;
-CREATE TABLE `distances` (
+DROP TABLE IF EXISTS `grid_cell_distances`;
+CREATE TABLE `grid_cell_distances` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pickup_location_id` int(11) NOT NULL COMMENT 'A',
   `grid_cell_id` int(11) NOT NULL COMMENT 'B',

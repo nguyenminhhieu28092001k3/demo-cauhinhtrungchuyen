@@ -23,13 +23,13 @@ class GridController {
         }
     }
 
-    async calculateAndSaveDistances(pickupLocationId) {
+    async calculateAndSaveGridCellDistances(pickupLocationId) {
         try {
-            console.log(`Starting distance calculation for PickupLocation ID: ${pickupLocationId}`);
-            await this.distanceService.calculateAndSaveDistances(pickupLocationId);
+            console.log(`Starting grid cell distance calculation for PickupLocation ID: ${pickupLocationId}`);
+            await this.distanceService.calculateAndSaveGridCellDistances(pickupLocationId);
             console.log(`Distance calculation and saving completed for PickupLocation ID: ${pickupLocationId}`);
         } catch (error) {
-            console.error(`Error in calculateAndSaveDistances:`, error.message);
+            console.error(`Error in calculateAndSaveGridCellDistances:`, error.message);
             throw error;
         }
     }
