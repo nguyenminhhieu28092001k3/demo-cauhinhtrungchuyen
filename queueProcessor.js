@@ -33,7 +33,7 @@ function runHeavyComputationInWorker(gridCellId, pickupLocationId) {
     });
 }
 
-queue.process(1, async (job) => {
+queue.process(10, async (job) => {
     try {
         let start = Date.now();
 
