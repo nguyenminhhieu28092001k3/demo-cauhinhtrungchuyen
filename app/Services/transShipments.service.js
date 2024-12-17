@@ -39,16 +39,6 @@ class FindTransshipmentPointService {
         });
 
         const pickupLocationDistances = await CacheHelper.getCachedData('pickupLocationDistances', PickupLocationDistance);
-        const wards = await CacheHelper.getCachedData('wards', Ward, {
-            where: {
-                longitude: {
-                    [Op.not]: null
-                },
-                latitude: {
-                    [Op.not]: null
-                }
-            }
-        });
         const pickupLocations = await CacheHelper.getCachedData('pickupLocations', PickupLocation, {
             where: {
                 status: FindTransshipmentPointService.ACTIVE,
@@ -109,40 +99,10 @@ class FindTransshipmentPointService {
             gridCelldistances,
             distanceAO,
             pickupLocations,
-            wards
         );
 
         // 12
         if (positionX) return positionX.id;
-
-        // 13
-        // let lMaxPlus = FindTransshipmentPointService.L_MAX;
-        // while (lMaxPlus <= distanceAO) {
-        //     lMaxPlus++;
-        //     const positionY = await this.findPositionX(
-        //         positionB.id,
-        //         positionA.id,
-        //         positionO.id,
-        //         pickupLocationDistances,
-        //         distances,
-        //         distanceAO,
-        //         pickupLocations,
-        //         wards,
-        //         FindTransshipmentPointService.L_MAX,
-        //         lMaxPlus,
-        //         false
-        //     );
-        //
-        //     // 14
-        //     if (positionY) {
-        //         const distanceAY = await this.getDistance(positionA.id, positionY.id, pickupLocationDistances, pickupLocations);
-        //         if (distanceAY < distanceAO) {
-        //
-        //             // 15
-        //             return positionY.id;
-        //         }
-        //     }
-        // }
 
         return null;
     }
@@ -199,7 +159,7 @@ class FindTransshipmentPointService {
         return (distance / 1000).toFixed(2);
     }
 
-    async findPositionX(positionB_Id, fromLocationId, toLocationId, pickupLocationDistances, gridCelldistances, distanceAO, pickupLocations, wards, lMin = FindTransshipmentPointService.L_MIN, lMax = FindTransshipmentPointService.L_MAX, biggerLMin = true) {
+    async findPositionX(positionB_Id, fromLocationId, toLocationId, pickupLocationDistances, gridCelldistances, distanceAO, pickupLocations, lMin = FindTransshipmentPointService.L_MIN, lMax = FindTransshipmentPointService.L_MAX, biggerLMin = true) {
         let positionXId = 0;
         let minDistance = Infinity;
 

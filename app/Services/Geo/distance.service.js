@@ -10,7 +10,7 @@ class DistanceService extends BaseGeoService {
     constructor(wgs84, utmZone, gridSize, googleApiKey) {
         super(wgs84, utmZone, gridSize);
         this.googleApiKey = googleApiKey;
-        this.searchRadius = 7000;
+        this.searchRadius = 9000;
     }
 
     calculateStraightLineDistance(lat1, lon1, lat2, lon2) {
