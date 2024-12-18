@@ -1,4 +1,4 @@
 worker_threads, bee-queues
 
 1. Chạy command gridCellTransShipments.command.js để thêm data và queues
-2. chạy file queueProcessor.js để xử lý queues
+2. chạy file queueCellGridProcessor.js để xử lý queues
