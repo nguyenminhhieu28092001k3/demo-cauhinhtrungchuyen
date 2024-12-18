@@ -125,7 +125,7 @@ class DistanceService extends BaseGeoService {
 
             gridCellsInRange = gridCellsInRange.concat(filteredCells);
 
-            if (gridCellsInRange.length >= 1000) {
+            if (gridCellsInRange.length >= 100) {
 
                 //console.log(1111 , gridCellsInRange.length);
                 await this.handleGridCells(gridCellsInRange, origin, pickupLocation);

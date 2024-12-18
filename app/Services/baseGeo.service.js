@@ -57,7 +57,7 @@ class BaseGeoService {
         try {
             const pathCreateDegrees = changePlacesDegrees(origin) + ';' + changePlacesDegrees(destination);
 
-            const response = await axios.get('http://router.project-osrm.org/route/v1/driving/' + pathCreateDegrees, {
+            const response = await axios.get('http://localhost:5000/route/v1/driving/' + pathCreateDegrees, {
                 params: {
                     overview: false
                 },
