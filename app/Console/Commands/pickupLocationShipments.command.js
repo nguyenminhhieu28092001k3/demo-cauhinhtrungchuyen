@@ -38,21 +38,21 @@ async function addPickupLocationShipmentsToQueue(args) {
 
             const jobPromises = lstPickupLocationDistances.map((pickupLocationDistance) => {
                 return pickupLocationTransShipmentsQueue.createJob({
-                    from_location_id: pickupLocationDistance.from_location_id,
-                    to_location_id: pickupLocationDistance.to_location_id,
+                    from_pickup_location_id: pickupLocationDistance.from_location_id,
+                    to_pickup_location_id: pickupLocationDistance.to_location_id,
                 })
                     .save()
                     .then((job) => {
                         logToFile(
                             '[INFO][addPickupLocationShipmentsToQueue] ' +
                             `Job created with id: ${job.id} for grid cell ${pickupLocationDistance.from_location_id} and pickup location ${pickupLocationDistance.to_location_id}`,
-                            'add_grid_cell_distances_to_queue'
+                            'add_pickup_location_distances_to_queue'
                         );
                     })
                     .catch((error) => {
                         logToFile(
                             '[ERROR][addPickupLocationShipmentsToQueue] Failed to create job:' + JSON.stringify(error),
-                            'add_grid_cell_distances_to_queue'
+                            'add_pickup_location_distances_to_queue'
                         );
                     });
             });
@@ -62,7 +62,7 @@ async function addPickupLocationShipmentsToQueue(args) {
             offset += batchSize;
         }
 
-        logToFile('[INFO][addPickupLocationShipmentsToQueue] All distances have been processed', 'add_pickup_location_distances_to_queue');
+            logToFile('[INFO][addPickupLocationShipmentsToQueue] All distances have been processed', 'add_pickup_location_distances_to_queue');
         console.log('[INFO][addPickupLocationShipmentsToQueue] All distances have been processed');
         process.exit();
     } catch (error) {

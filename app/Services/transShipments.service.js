@@ -30,7 +30,7 @@ class FindTransshipmentPointService {
         const positionA = await PickupLocation.findByPk(pickupLocationId);
         const positionO = await GridCell.findByPk(gridCellId);
 
-        if (!positionA || !positionO) return null;
+        if (!positionA || !positionO) return 0;
 
         const gridCelldistances = await GridCellDistance.findAll({
             where: {
@@ -62,27 +62,27 @@ class FindTransshipmentPointService {
         const distanceAO = await this.getPickupLocationToGridCellDistance(positionA.id, positionO.id, gridCelldistances);
 
         // 1.2
-        if (distanceAO <= radius) return null;
+        if (distanceAO <= radius) return 0;
 
         // 3.4
         const positionB = await this.getNearestPickupLocationByGridCell(gridCellId, gridCelldistances, pickupLocations);
         const distanceAB = await this.getDistance(positionA.id, positionB.id, pickupLocationDistances, pickupLocations);
 
         // 5
-        if (distanceAB <= FindTransshipmentPointService.L_MIN || positionA.id === positionB.id) return null;
-        if (!positionO || !positionA || !positionB) return null;
+        if (distanceAB <= FindTransshipmentPointService.L_MIN || positionA.id === positionB.id) return 0;
+        if (!positionO || !positionA || !positionB) return 0;
 
         // 6
         if (distanceAB > FindTransshipmentPointService.L_MIN && distanceAB < FindTransshipmentPointService.L_MAX) {
 
             // 7
-            if (distanceAO <= distanceAB) return null;
+            if (distanceAO <= distanceAB) return 0;
 
             // 8
             const distanceBO = await this.getPickupLocationToGridCellDistance(positionB.id, positionO.id, gridCelldistances);
 
             if (distanceBO <= FindTransshipmentPointService.ONE_KM && (distanceAO > FindTransshipmentPointService.L_MIN && distanceAO < FindTransshipmentPointService.L_MAX)) {
-                return null;
+                return 0;
             } else {
 
                 // 9
@@ -104,7 +104,7 @@ class FindTransshipmentPointService {
         // 12
         if (positionX) return positionX.id;
 
-        return null;
+        return 0;
     }
 
     async getNearestPickupLocationByGridCell(gridCellId, gridCelldistances, pickupLocations) {

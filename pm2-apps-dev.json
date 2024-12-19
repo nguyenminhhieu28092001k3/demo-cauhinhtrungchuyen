@@ -2,7 +2,7 @@
   "apps": [
     {
       "name": "queue-processor-dev",
-      "script": "./queueProcessor.js",
+      "script": "./queueCellGridProcessor.js",
       "watch": true,
       "env": {
         "NODE_ENV": "local"

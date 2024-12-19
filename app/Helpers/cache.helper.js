@@ -1,18 +1,27 @@
 const Redis = require('ioredis');
+const {logToFile} = require("./base.helper");
 const redis = new Redis();
 
 class CacheHelper {
     constructor() {}
 
     // Phương thức lấy dữ liệu từ cache, nếu không có sẽ lấy từ database
-    static async getCachedData(key, model, query = {}, ttl = 3600) {
+    static async getCachedData(key, model, query = {}, ttl = 3600, attributes = null) {
         try {
             const cachedData = await redis.get(key);
             if (cachedData) {
                 return JSON.parse(cachedData);
             } else {
-                const data = await model.findAll(query);
-                await redis.set(key, JSON.stringify(data), 'EX', ttl); // Cache for ttl seconds
+                const data = await model.findAll({
+                    ...query,
+                    attributes: attributes || undefined,
+                    raw: true,
+                });
+
+                if (data && data.length > 0) {
+                    await redis.set(key, JSON.stringify(data), 'EX', ttl);
+                }
+
                 return data;
             }
         } catch (error) {

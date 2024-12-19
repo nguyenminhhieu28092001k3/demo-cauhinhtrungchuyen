@@ -25,19 +25,33 @@ CREATE TABLE `grid_cell_distances` (
   UNIQUE KEY `pickup_location_id_grid_cell_id_index` (`pickup_location_id`,`grid_cell_id`)  USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `grid_cell_trans_shipments`;
-CREATE TABLE `grid_cell_trans_shipments` (
+-- DROP TABLE IF EXISTS `grid_cell_trans_shipments`;
+-- CREATE TABLE `grid_cell_trans_shipments` (
+--   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+--   `pickup_location_id` int(11) NOT NULL,
+--   `grid_cell_id` int(11) NOT NULL,
+--   `trans_shipment_id` int(11) DEFAULT 0,
+--   `created_at` timestamp NULL DEFAULT current_timestamp(),
+--   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+--   PRIMARY KEY (`id`) USING BTREE,
+--   UNIQUE KEY `pickup_location_id_grid_cell_id_index` (`pickup_location_id`,`grid_cell_id`) USING BTREE,
+--   KEY `trans_shipment_id_index` (`trans_shipment_id`) USING BTREE
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `grid_cell_distances`
+ADD INDEX `grid_cell_id_index`(`grid_cell_id` ASC) USING BTREE,
+ADD INDEX `pickup_location_id_index`(`pickup_location_id` ASC) USING BTREE;
+
+
+DROP TABLE IF EXISTS `pickup_location_trans_shipments`;
+CREATE TABLE `pickup_location_trans_shipments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `pickup_location_id` int(11) NOT NULL,
-  `grid_cell_id` int(11) NOT NULL,
+  `from_pickup_location_id` int(11) NOT NULL,
+  `to_pickup_location_id` int(11) NOT NULL,
   `trans_shipment_id` int(11) DEFAULT 0,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `pickup_location_id_grid_cell_id_index` (`pickup_location_id`,`grid_cell_id`) USING BTREE,
+  UNIQUE KEY `from_to_pickup_location_id_index` (`from_pickup_location_id`,`to_pickup_location_id`) USING BTREE,
   KEY `trans_shipment_id_index` (`trans_shipment_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-ALTER TABLE `distances`
-ADD INDEX `grid_cell_id_index`(`grid_cell_id` ASC) USING BTREE,
-ADD INDEX `pickup_location_id_index`(`pickup_location_id` ASC) USING BTREE;
