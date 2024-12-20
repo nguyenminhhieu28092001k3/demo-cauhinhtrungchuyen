@@ -106,4 +106,4 @@ const argv = yargs
 
 // HCM
 //node grid.command.js generate -b "10.4986,11.4208,106.2845,107.1661"
-//  node grid.command.js calculateDistances -p 80
+//node grid.command.js calculateDistances -p 80
