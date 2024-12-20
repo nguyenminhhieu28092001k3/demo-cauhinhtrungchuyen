@@ -1,4 +1,5 @@
 const proj4 = require("proj4");
+const OpenLocationCode = require('open-location-code').OpenLocationCode;
 const GridCell = require("../../Models/GridCell.model");
 const sequelize = require("../../../lib/database");
 const BaseGeoService = require("../baseGeo.service");
@@ -23,6 +24,7 @@ class GridService extends BaseGeoService {
 
 
     async generateGridAndSave() {
+        var openLocationCode = new OpenLocationCode();
         const { latMin, latMax, longMin, longMax } = this.bounds;
 
         // VD: 500m = 500 / 111000 = 0.0045 độ
@@ -45,8 +47,9 @@ class GridService extends BaseGeoService {
                 const utmYCenter = (yMin + yMax) / 2;
 
                 const [longitude, latitude] = proj4(this.utmZone, this.wgs84, [utmXCenter, utmYCenter]);
-
+                const name = openLocationCode.encode(latitude, longitude);
                 gridCells.push({
+                    name,
                     gridX,
                     gridY,
                     xMin,

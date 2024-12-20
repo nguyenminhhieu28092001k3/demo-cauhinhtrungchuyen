@@ -7,6 +7,10 @@ const GridCell = sequelize.define('GridCell', {
         autoIncrement: true,
         primaryKey: true,
     },
+    name: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
     gridX: {
         type: DataTypes.INTEGER,
         allowNull: false,

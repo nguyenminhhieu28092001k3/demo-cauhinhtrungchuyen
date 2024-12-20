@@ -1,6 +1,7 @@
 const proj4 = require("proj4");
 const axios = require("axios");
 const {logToFile, changePlacesDegrees} = require("../Helpers/base.helper");
+const calculateKilometerByCoordinate = require("../Helpers/calculateKilometerByCoordinate.helper");
 
 class BaseGeoService {
 
@@ -88,6 +89,34 @@ class BaseGeoService {
         }
     }
 
+    static async getDistanceM(fromLocationId, toLocationId, pickupLocationDistances, pickupLocationsMap) {
+
+        const pickupLocationDistance = pickupLocationDistances.find(item => item.from_location_id === fromLocationId && item.to_location_id === toLocationId);
+
+        let distance = pickupLocationDistance ? pickupLocationDistance.distance : 0;
+
+        const fromPickupLocation = pickupLocationsMap.get(fromLocationId);
+
+        if (!distance) {
+            const fromPickupLocation = pickupLocationsMap.get(fromLocationId);
+            const toPickupLocation = pickupLocationsMap.get(toLocationId);
+
+            if(fromPickupLocation && toPickupLocation) {
+                const result = calculateKilometerByCoordinate(
+                    fromPickupLocation.longitude,
+                    fromPickupLocation.latitude,
+                    toPickupLocation.longitude,
+                    toPickupLocation.latitude
+                );
+
+                return parseFloat(Math.round(result)) * 1000 || 0;
+            }else{
+                return 0;
+            }
+        }
+
+        return distance;
+    }
 
 }
 

@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS `grid_cells`;
 CREATE TABLE `grid_cells` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NULL,
   `gridX` int(11) NOT NULL,
   `gridY` int(11) NOT NULL,
   `xMin` double NOT NULL,
@@ -55,3 +56,12 @@ CREATE TABLE `pickup_location_trans_shipments` (
   UNIQUE KEY `from_to_pickup_location_id_index` (`from_pickup_location_id`,`to_pickup_location_id`) USING BTREE,
   KEY `trans_shipment_id_index` (`trans_shipment_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE `pickup_location_distances`
+ADD COLUMN `path_distance` int NULL COMMENT 'Tổng khoảng cách của đường trung chuyển' AFTER `distance`,
+MODIFY COLUMN `active` tinyint NULL DEFAULT 1 AFTER `path`;
+
+ALTER TABLE `pickup_location_distances`
+ADD COLUMN `created_at` timestamp NULL DEFAULT current_timestamp() AFTER `is_edit`,
+ADD COLUMN `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;

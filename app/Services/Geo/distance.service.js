@@ -4,6 +4,7 @@ const BaseGeoService = require('../baseGeo.service');
 const GridCellDistance = require('../../Models/GridCellDistance.model');
 const PickupLocation = require('../../Models/PickupLocation.model');
 const GridCell = require('../../Models/GridCell.model');
+const PickupLocationTransShipments = require('../../Models/PickupLocationTransShipment.model');
 const {logToFile} = require('../../Helpers/base.helper');
 
 class DistanceService extends BaseGeoService {
@@ -91,7 +92,6 @@ class DistanceService extends BaseGeoService {
         }
     }
 
-
     async getGridCellsInRange(lat, lon, origin, pickupLocation) {
 
         const chunkSize = 1000;
@@ -167,6 +167,47 @@ class DistanceService extends BaseGeoService {
         );
     }
 
+    static async calculatePath(fromLocationId, toLocationId, pickupLocationDistances, pickupLocationsMap) {
+        let [path, pathDistance] = [[], 0];
+        let currentFromLocationId = fromLocationId;
+        let currentToLocationId = toLocationId;
+
+        path.push(fromLocationId);
+
+        while (true) {
+            try {
+                const record = await PickupLocationTransShipments.findOne({
+                    where: {
+                        from_pickup_location_id: currentFromLocationId,
+                        to_pickup_location_id: currentToLocationId,
+                    },
+                    attributes: ['trans_shipment_id'],
+                    raw: true,
+                });
+
+                if (!record || record.trans_shipment_id === 0 || record.trans_shipment_id === null) {
+                    break;
+                }
+
+                path.push(record.trans_shipment_id);
+                currentFromLocationId = record.trans_shipment_id;
+            } catch (error) {
+                console.error('Error fetching trans_shipment_id:', error);
+                break;
+            }
+        }
+        path.push(toLocationId);
+
+        const pairsPath = path.slice(0, -1).map((value, index) => [value, path[index + 1]]);
+        const distances = await Promise.all(
+            pairsPath.map(([fromLocationId, toLocationId]) =>
+                this.getDistanceM(fromLocationId, toLocationId, pickupLocationDistances, pickupLocationsMap)
+            )
+        );
+        pathDistance = distances.reduce((acc, distance) => acc + distance, 0);
+
+        return [path, pathDistance];
+    }
 }
 
 module.exports = DistanceService;

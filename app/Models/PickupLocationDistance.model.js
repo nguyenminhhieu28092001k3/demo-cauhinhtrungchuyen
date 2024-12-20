@@ -20,6 +20,10 @@ const PickupLocationDistance = sequelize.define('PickupLocationDistance', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    path_distance: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     active: {
         type: DataTypes.TINYINT,
         defaultValue: 1
@@ -32,10 +36,20 @@ const PickupLocationDistance = sequelize.define('PickupLocationDistance', {
     is_edit: {
         type: DataTypes.TINYINT,
         defaultValue: 0
-    }
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
     tableName: 'pickup_location_distances',
-    timestamps: false, // Không sử dụng các cột createdAt, updatedAt
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     indexes: [
         {
             unique: true,
