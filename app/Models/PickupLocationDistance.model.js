@@ -22,7 +22,7 @@ const PickupLocationDistance = sequelize.define('PickupLocationDistance', {
     },
     path_distance: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     active: {
         type: DataTypes.TINYINT,
@@ -30,7 +30,7 @@ const PickupLocationDistance = sequelize.define('PickupLocationDistance', {
     },
     path: {
         type: DataTypes.STRING(200),
-        allowNull: false,
+        allowNull: true,
         defaultValue: ''
     },
     is_edit: {

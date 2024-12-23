@@ -5,9 +5,11 @@ const redisConfig = require('../../../config/redis');
 const pickupLocationTransShipmentsQueue = require('../../Queues/pickupLocationTransShipments.queue');
 const DistanceService = require('../../Services/Geo/distance.service');
 const PickupLocationDistance = require('../../Models/PickupLocationDistance.model');
-const {logToFile, getPickupLocationIdsTransShipment, buildWhereCondition} = require("../../Helpers/base.helper");
+const {logToFile} = require("../../Helpers/base.helper");
+const {getPickupLocationIdsTransShipment, buildWhereCondition} = require("../../Helpers/command.helper");
 const CacheHelper = require('../../Helpers/cache.helper');
 const PickupLocation = require("../../Models/PickupLocation.model");
+const PickupLocationTransShipment  = require("../../Models/PickupLocationTransShipment.model");
 const {Op} = require("sequelize");
 
 async function addPickupLocationShipmentsToQueue(args) {
@@ -20,11 +22,20 @@ async function addPickupLocationShipmentsToQueue(args) {
     await CacheHelper.clearCache('pickupLocations');
 
     try {
-        while (hasMoreData) {
 
-            const lstPickupLocationIds = await getPickupLocationIdsTransShipment();
-            const whereCondition = buildWhereCondition(lstPickupLocationIds);
-            
+        const lstPickupLocationIds = await getPickupLocationIdsTransShipment();
+        const whereCondition = buildWhereCondition(lstPickupLocationIds);
+
+        await PickupLocationTransShipment.destroy({
+            where: {
+                [Op.or]: [
+                    { from_pickup_location_id: { [Op.notIn]: lstPickupLocationIds } },
+                    { to_pickup_location_id: { [Op.notIn]: lstPickupLocationIds } }
+                ]
+            }
+        });
+
+        while (hasMoreData) {
             const lstPickupLocationDistances = await PickupLocationDistance.findAll({
                 raw: true,
                 attributes: ['from_location_id', 'to_location_id'],
@@ -32,9 +43,6 @@ async function addPickupLocationShipmentsToQueue(args) {
                 limit: batchSize,
                 offset: offset,
             });
-            
-            console.log('logs', lstPickupLocationDistances);
-            process.exit()
 
             if (lstPickupLocationDistances.length === 0) {
                 hasMoreData = false;
@@ -87,27 +95,29 @@ async function handleAddPath(args) {
 
     try {
 
-        let lstPickupLocation = await PickupLocation.findAll({
-            raw: true,
-            attributes: ['id'],
-            where: {transshipment_status : 1},
-        });
+        const lstPickupLocationIds = await getPickupLocationIdsTransShipment();
+        const whereCondition = buildWhereCondition(lstPickupLocationIds);
 
-        lstPickupLocation = lstPickupLocation.map(location => location.id);
-
-        const whereCondition = {
-            [Op.and]: [
-                { from_location_id: { [Op.in]: lstPickupLocation } },
-                { to_location_id: { [Op.in]: lstPickupLocation } }
-            ]
-        };
-
-
+        await PickupLocationDistance.update(
+            {
+                path_distance: null,
+                path: ''
+            },
+            {
+                where: {
+                    [Op.or]: [
+                        { from_location_id: { [Op.notIn]: lstPickupLocationIds } },
+                        { to_location_id: { [Op.notIn]: lstPickupLocationIds } }
+                    ]
+                }
+            }
+        );
+        
         let [pickupLocationDistances, pickupLocations] = await Promise.all([
             CacheHelper.getCachedData(
                 'pickupLocationDistances',
                 PickupLocationDistance,
-                {},
+                { where: whereCondition },
                 3600,
                 ['id', 'from_location_id', 'to_location_id', 'distance']
             ),
@@ -117,6 +127,7 @@ async function handleAddPath(args) {
                 {
                     where: {
                         status: 1,
+                        transshipment_status: 1,
                         type: 1,
                         longitude: { [Op.not]: null },
                         latitude: { [Op.not]: null },
@@ -131,9 +142,6 @@ async function handleAddPath(args) {
         const pickupLocationsMap = new Map(pickupLocations.map(loc => [loc.id, loc]));
 
         while (hasMoreData) {
-            const whereCondition = pickupId
-                ? {from_location_id: pickupId}
-                : {};
 
             const lstPickupLocationDistances = await PickupLocationDistance.findAll({
                 attributes: ['id', 'from_location_id', 'to_location_id', 'path', 'path_distance'],
@@ -160,8 +168,8 @@ async function handleAddPath(args) {
 
                     console.log(`From: ${from_location_id} to ${to_location_id} path: ${JSON.stringify(path)}, pathDistance: ${pathDistance}`);
                 } catch (error) {
-                    let errorMsg = `[ERROR][addPathPickupLocationShipments] Failed to update path for from_location_id: ${pickupLocationDistance.from_location_id}, to_location_id: ${pickupLocationDistance.to_location_id}` + JSON.stringify(error.message);
                     console.error(error);
+                    let errorMsg = `[ERROR][addPathPickupLocationShipments] Failed to update path for from_location_id: ${pickupLocationDistance.from_location_id}, to_location_id: ${pickupLocationDistance.to_location_id}` + JSON.stringify(error.message);
                     logToFile(errorMsg, 'add_add_path_pickup_location_distances');
                 }
             });

@@ -4,8 +4,8 @@ const FindPickupLocationTransshipmentPointService = require('../../app/Services/
     try {
         const transshipmentService = new FindPickupLocationTransshipmentPointService();
         const transShipmentId = await transshipmentService.execute({
-            fromPickupLocationId: 24,
-            toPickupLocationId: 13,
+            fromPickupLocationId: 1,
+            toPickupLocationId: 5,
         });
 
         console.log('logs', transShipmentId);

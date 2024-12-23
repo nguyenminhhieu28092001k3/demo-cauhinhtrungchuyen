@@ -4,6 +4,7 @@ const PickupLocation = require('../Models/PickupLocation.model');
 const PickupLocationDistance = require('../Models/PickupLocationDistance.model');
 const CacheHelper = require('../Helpers/cache.helper');
 const {logToFile} = require("../Helpers/base.helper");
+const {getPickupLocationIdsTransShipment, buildWhereCondition} = require("../Helpers/command.helper");
 
 class FindPickupLocationTransshipmentPointService {
     static L_MIN = 4;
@@ -29,11 +30,14 @@ class FindPickupLocationTransshipmentPointService {
             const positionA = { id: fromPickupLocationId };
             const positionO = { id: toPickupLocationId };
 
+            const lstPickupLocationIds = await getPickupLocationIdsTransShipment();
+            const whereCondition = buildWhereCondition(lstPickupLocationIds);
+
             let [pickupLocationDistances, pickupLocations, pickupLocationODistances] = await Promise.all([
                 CacheHelper.getCachedData(
                     'pickupLocationDistances',
                     PickupLocationDistance,
-                    {},
+                    { where: whereCondition },
                     3600,
                     ['id', 'from_location_id', 'to_location_id', 'distance']
                 ),
@@ -44,6 +48,7 @@ class FindPickupLocationTransshipmentPointService {
                         where: {
                             status: FindPickupLocationTransshipmentPointService.ACTIVE,
                             type: FindPickupLocationTransshipmentPointService.ACTIVE,
+                            transshipment_status: 1,
                             longitude: { [Op.not]: null },
                             latitude: { [Op.not]: null },
                             deleted_at: { [Op.is]: null }
@@ -53,7 +58,10 @@ class FindPickupLocationTransshipmentPointService {
                     ['id', 'name', 'latitude', 'longitude']
                 ),
                 PickupLocationDistance.findAll({
-                    where: { to_location_id: toPickupLocationId },
+                    where: {
+                        ...whereCondition,
+                        to_location_id: toPickupLocationId
+                    },
                     order: [['distance', 'ASC']],
                     raw: true
                 })
