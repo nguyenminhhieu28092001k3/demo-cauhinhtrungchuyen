@@ -5,7 +5,7 @@ const redisConfig = require('../../../config/redis');
 const pickupLocationTransShipmentsQueue = require('../../Queues/pickupLocationTransShipments.queue');
 const DistanceService = require('../../Services/Geo/distance.service');
 const PickupLocationDistance = require('../../Models/PickupLocationDistance.model');
-const {logToFile} = require("../../Helpers/base.helper");
+const {logToFile, getPickupLocationIdsTransShipment, buildWhereCondition} = require("../../Helpers/base.helper");
 const CacheHelper = require('../../Helpers/cache.helper');
 const PickupLocation = require("../../Models/PickupLocation.model");
 const {Op} = require("sequelize");
@@ -22,10 +22,9 @@ async function addPickupLocationShipmentsToQueue(args) {
     try {
         while (hasMoreData) {
 
-            const whereCondition = pickupId
-                ? {from_location_id: pickupId}
-                : {};
-
+            const lstPickupLocationIds = await getPickupLocationIdsTransShipment();
+            const whereCondition = buildWhereCondition(lstPickupLocationIds);
+            
             const lstPickupLocationDistances = await PickupLocationDistance.findAll({
                 raw: true,
                 attributes: ['from_location_id', 'to_location_id'],
@@ -33,6 +32,9 @@ async function addPickupLocationShipmentsToQueue(args) {
                 limit: batchSize,
                 offset: offset,
             });
+            
+            console.log('logs', lstPickupLocationDistances);
+            process.exit()
 
             if (lstPickupLocationDistances.length === 0) {
                 hasMoreData = false;
@@ -69,6 +71,7 @@ async function addPickupLocationShipmentsToQueue(args) {
         console.log('[INFO][addPickupLocationShipmentsToQueue] All distances have been processed');
         process.exit();
     } catch (error) {
+        console.log(error)
         logToFile('[ERROR][addPickupLocationShipmentsToQueue] Error processing distances:' + JSON.stringify(error), 'add_pickup_location_distances_to_queue');
     }
 }
@@ -79,7 +82,27 @@ async function handleAddPath(args) {
     let batchSize = 1000;
     let pickupId = args.pickupId ?? null;
 
+    await CacheHelper.clearCache('pickupLocationDistances');
+    await CacheHelper.clearCache('pickupLocations');
+
     try {
+
+        let lstPickupLocation = await PickupLocation.findAll({
+            raw: true,
+            attributes: ['id'],
+            where: {transshipment_status : 1},
+        });
+
+        lstPickupLocation = lstPickupLocation.map(location => location.id);
+
+        const whereCondition = {
+            [Op.and]: [
+                { from_location_id: { [Op.in]: lstPickupLocation } },
+                { to_location_id: { [Op.in]: lstPickupLocation } }
+            ]
+        };
+
+
         let [pickupLocationDistances, pickupLocations] = await Promise.all([
             CacheHelper.getCachedData(
                 'pickupLocationDistances',

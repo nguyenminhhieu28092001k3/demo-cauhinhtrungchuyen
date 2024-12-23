@@ -1,6 +1,8 @@
 const proj4 = require("proj4");
 const fs = require('fs');
 const path = require('path');
+const {Op} = require("sequelize");
+const PickupLocation = require("../Models/PickupLocation.model");
 
 function changePlacesDegrees(toaDo) {
     let [kinhDo, viDo] = toaDo.split(',');
@@ -66,6 +68,26 @@ function logToFile(msg, fileName) {
     });
 }
 
+// Hàm lấy danh sách pickup location ID
+async function getPickupLocationIdsTransShipment() {
+    const lstPickupLocation = await PickupLocation.findAll({
+        raw: true,
+        attributes: ['id'],
+        where: { transshipment_status: 1 },
+    });
+    return lstPickupLocation.map(location => location.id);
+}
+
+// Hàm tạo điều kiện WHERE
+function buildWhereCondition(pickupLocationIds) {
+    return {
+        [Op.and]: [
+            { from_location_id: { [Op.in]: pickupLocationIds } },
+            { to_location_id: { [Op.in]: pickupLocationIds } },
+        ],
+    };
+}
+
 // Ví dụ sử dụng hàm
 // const latitude = 40.748817; // Vĩ độ
 // const longitude = -73.985428; // Kinh độ
@@ -77,8 +99,11 @@ function logToFile(msg, fileName) {
 
 
 
+
 module.exports = {
     convertWGS84ToUTM,
     logToFile,
-    changePlacesDegrees
+    changePlacesDegrees,
+    getPickupLocationIdsTransShipment,
+    buildWhereCondition
 };
