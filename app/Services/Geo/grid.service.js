@@ -13,7 +13,7 @@ class GridService extends BaseGeoService {
     async saveGridCells(gridCells) {
         try {
             await GridCell.bulkCreate(gridCells, {
-                updateOnDuplicate: ["xMin", "yMin", "xMax", "yMax", "latitude", "longitude"],
+                updateOnDuplicate: ["name", "xMin", "yMin", "xMax", "yMax", "latitude", "longitude"],
             });
 
             console.log(`Đã lưu ${gridCells.length} ô lưới.`);
