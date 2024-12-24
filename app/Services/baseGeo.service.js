@@ -38,7 +38,7 @@ class BaseGeoService {
                 },
             });
 
-            logToFile('[INFO][CALL GOOGLE API] ' + JSON.stringify(response?.data), 'call_api');
+            logToFile('[INFO][CALL GOOGLE API] ' + JSON.stringify(response?.data), 'call_api_google');
 
             if (
                 response?.data?.rows[0]?.elements[0]?.status === 'OK' &&
@@ -49,7 +49,7 @@ class BaseGeoService {
                 return 0;
             }
         } catch (error) {
-            logToFile('[ERROR][CALL GOOGLE API] ' + JSON.stringify(response?.data), 'call_api');
+            logToFile('[ERROR][CALL GOOGLE API] ' + JSON.stringify(response?.data), 'call_api_google');
             throw error;
         }
     }

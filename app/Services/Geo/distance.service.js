@@ -5,6 +5,7 @@ const GridCellDistance = require('../../Models/GridCellDistance.model');
 const PickupLocation = require('../../Models/PickupLocation.model');
 const GridCell = require('../../Models/GridCell.model');
 const PickupLocationTransShipments = require('../../Models/PickupLocationTransShipment.model');
+const PickupLocationDistance = require('../../Models/PickupLocationDistance.model');
 const {logToFile} = require('../../Helpers/base.helper');
 
 class DistanceService extends BaseGeoService {
@@ -32,10 +33,10 @@ class DistanceService extends BaseGeoService {
     async fetchDrivingDistance(origin, destination) {
 
         switch (process.env.IS_CALL_GET_DISTANCE) {
-            // case 'GOOGLE_MAP' :
-            //     return await this.callDistanceGoogle(origin, destination, this.googleApiKey);
-            //
-            //     break;
+            case 'GOOGLE_MAP' :
+                return await this.callDistanceGoogle(origin, destination, this.googleApiKey);
+
+                break;
             case 'STRAIGHT_LINE' :
                 const [lat1, lon1] = origin.split(',').map(Number);
                 const [lat2, lon2] = destination.split(',').map(Number);
@@ -207,6 +208,63 @@ class DistanceService extends BaseGeoService {
         pathDistance = distances.reduce((acc, distance) => acc + distance, 0);
 
         return [path, pathDistance];
+    }
+
+    async calculatePickupLocationDistanceAll(rerun = null) {
+        try {
+            const pickupLocations = await PickupLocation.findAll({
+                attributes: ['id', 'longitude', 'latitude'],
+                where: {
+                    transshipment_status: 1,
+                    type: 1,
+                    latitude: { [Op.ne]: 0, [Op.not]: null },
+                    longitude: { [Op.ne]: 0, [Op.not]: null },
+                    deleted_at: null,
+                },
+            });
+            
+            for (const fromLocation of pickupLocations) {
+                for (const toLocation of pickupLocations) {
+                    if (fromLocation.id === toLocation.id) {
+                        continue;
+                    }
+                    
+                    const existingRecord = await PickupLocationDistance.findOne({
+                        where: {
+                            from_location_id: fromLocation.id,
+                            to_location_id: toLocation.id,
+                        },
+                    });
+
+                    if (existingRecord && rerun !== 'true') {
+                        continue;
+                    }
+                    
+                    const distance = await this.fetchDrivingDistance(`${fromLocation.latitude},${fromLocation.longitude}`,
+                        `${toLocation.latitude},${toLocation.longitude}`);
+
+                    await PickupLocationDistance.upsert({
+                        from_location_id: fromLocation.id,
+                        to_location_id: toLocation.id,
+                        distance: distance,
+                        active: distance < 10000 ? 1 : 0,
+                    });
+
+                    var msg = `[INFO][calculatePickupLocationDistanceAll] Handle :From: ${fromLocation.id} to ${toLocation.id} distance= ${distance}`;
+                    console.log(msg);
+                    logToFile(
+                        msg,
+                        'calculate_pickup_location_distance_all'
+                    );
+                }
+            }
+        } catch (error) {
+            console.error(`Error in calculatePickupLocationDistanceAll: ${error}`);
+            logToFile(
+                '[ERROR][calculatePickupLocationDistanceAll] Failed handle:' + JSON.stringify(error),
+                'calculate_pickup_location_distance_all'
+            );
+        }
     }
 }
 
