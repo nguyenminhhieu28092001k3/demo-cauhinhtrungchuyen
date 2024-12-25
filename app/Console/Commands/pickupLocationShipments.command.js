@@ -224,7 +224,7 @@ const argv = yargs
 
 
 // 1. Tính trung chuyển
-// VD: node pickupLocationShipments.command.js pickupLocationTransShipments -p 2
+// VD: node pickupLocationShipments.command.js pickupLocationTransShipments
 
 // 2. Thêm tuyến vào bảng pickup_location_distances
-// VD: node pickupLocationShipments.command.js addPath -p 2
+// VD: node pickupLocationShipments.command.js addPath
