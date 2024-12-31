@@ -6,7 +6,14 @@ async function getPickupLocationIdsTransShipment() {
     const lstPickupLocation = await PickupLocation.findAll({
         raw: true,
         attributes: ['id'],
-        where: { transshipment_status: 1 },
+        where: {
+            transshipment_status: 1,
+            status: 1,
+            type: 1,
+            longitude: { [Op.ne]: 0.0000000, [Op.not]: null },
+            latitude: { [Op.ne]: 0.0000000, [Op.not]: null },
+            deleted_at: null
+        },
     });
     return lstPickupLocation.map(location => location.id);
 }

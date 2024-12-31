@@ -65,3 +65,5 @@ MODIFY COLUMN `active` tinyint NULL DEFAULT 1 AFTER `path`;
 ALTER TABLE `pickup_location_distances`
 ADD COLUMN `created_at` timestamp NULL DEFAULT current_timestamp() AFTER `is_edit`,
 ADD COLUMN `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;
+
+
