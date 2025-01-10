@@ -119,16 +119,19 @@ const argv = yargs
 // VD: node grid.command.js calculatePickupLocationDistanceAll
 
 
-// List pickup đà nẵng
-// node grid.command.js calculateDistances -p 80
-// node grid.command.js calculateDistances -p 630
-// node grid.command.js calculateDistances -p 695
-// node grid.command.js calculateDistances -p 987
-// node grid.command.js calculateDistances -p 989
-// node grid.command.js calculateDistances -p 1042
-// node grid.command.js calculateDistances -p 1087
-
-
 // HCM
 //node grid.command.js generate -b "10.4986,11.4208,106.2845,107.1661"
 //node grid.command.js calculateDistances -p 80
+
+// Cần thơ
+// node grid.command.js generate -b "9.9908,10.1041,105.6947,105.8107"
+// node grid.command.js calculateDistances -p 1681
+// node grid.command.js calculateDistances -p 733
+// node grid.command.js calculateDistances -p 677
+// node grid.command.js calculateDistances -p 679
+// node grid.command.js calculateDistances -p 707
+// node grid.command.js calculateDistances -p 541
+// node grid.command.js calculateDistances -p 543
+// node grid.command.js calculateDistances -p 509
+// node grid.command.js calculateDistances -p 81
+// node grid.command.js calculateDistances -p 66

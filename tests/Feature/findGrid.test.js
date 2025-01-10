@@ -9,8 +9,8 @@ const gridSize = parseInt(process.env.GRID_SIZE);
 
 const findGridService = new FindGridService(wgs84, utmZone, gridSize);
 
-const latitude = 10.728162;
-const longitude = 106.556351;
+const latitude = 10.7931859;
+const longitude = 106.6500753;
 
 //16.033883, 108.179645
 
