@@ -1,5 +1,4 @@
 const axios = require('axios');
-const pLimit = require('p-limit');
 const {Op} = require('sequelize');
 const BaseGeoService = require('../baseGeo.service');
 const GridCellDistance = require('../../Models/GridCellDistance.model');
@@ -14,9 +13,7 @@ class DistanceService extends BaseGeoService {
         super(wgs84, utmZone, gridSize);
         this.googleApiKey = googleApiKey;
         this.searchRadius = 9000;
-        this.limit = pLimit(10);
     }
-
 
     calculateStraightLineDistance(lat1, lon1, lat2, lon2) {
         const toRadians = (degree) => (degree * Math.PI) / 180;
@@ -35,7 +32,6 @@ class DistanceService extends BaseGeoService {
 
     async fetchDrivingDistance(origin, destination) {
 
-        return 1;
         switch (process.env.IS_CALL_GET_DISTANCE) {
             case 'GOOGLE_MAP' :
                 return await this.callDistanceGoogle(origin, destination, this.googleApiKey);
@@ -56,32 +52,29 @@ class DistanceService extends BaseGeoService {
 
     async handleGridCells(gridCells, origin, pickupLocation) {
 
-        const distancePromises = gridCells.map((gridCell, index) =>
-            this.limit(async () => {
-                const destination = `${gridCell.latitude},${gridCell.longitude}`;
-                try {
-                    // Delay riêng lẻ từng request
-                    await this.sleep(1000); // Delay 500ms giữa các request
-                    const distance = await this.fetchDrivingDistance(origin, destination);
-                    console.log(
-                        `Prepared distance data for PickupLocation(${pickupLocation.id}), Distance ${distance} and GridCell(${gridCell.id}), Thời gian: ${new Date(Date.now()).toISOString()}`
-                    );
-                    return {
-                        pickup_location_id: pickupLocation.id,
-                        grid_cell_id: gridCell.id,
-                        distance,
-                        created_at: new Date(),
-                        updated_at: new Date(),
-                    };
-                } catch (error) {
-                    console.error(
-                        `Error calculating distance for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}):`,
-                        error
-                    );
-                    return null;
-                }
-            })
-        );
+        const distancePromises = gridCells.map(async (gridCell) => {
+
+            const destination = `${gridCell.latitude},${gridCell.longitude}`;
+            try {
+                const distance = await this.fetchDrivingDistance(origin, destination);
+                console.log(
+                    `Prepared distance data for PickupLocation(${pickupLocation.id}), Distance ${distance} and GridCell(${gridCell.id}).`
+                );
+                return {
+                    pickup_location_id: pickupLocation.id,
+                    grid_cell_id: gridCell.id,
+                    distance,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                };
+            } catch (error) {
+                console.error(
+                    `Error calculating distance for PickupLocation(${pickupLocation.id}) and GridCell(${gridCell.id}):`,
+                    error
+                );
+                return null;
+            }
+        });
 
         try {
             const resolvedDistances = await Promise.all(distancePromises);
@@ -90,9 +83,9 @@ class DistanceService extends BaseGeoService {
 
             if (distanceData.length > 0) {
 
-                // await GridCellDistance.bulkCreate(distanceData, {
-                //     updateOnDuplicate: ['distance', 'updated_at'],
-                // });
+                await GridCellDistance.bulkCreate(distanceData, {
+                    updateOnDuplicate: ['distance', 'updated_at'],
+                });
                 console.log(`Saved ${distanceData.length} distance records in bulk.`);
             }
         } catch (error) {
@@ -224,18 +217,18 @@ class DistanceService extends BaseGeoService {
                 where: {
                     transshipment_status: 1,
                     type: 1,
-                    latitude: {[Op.ne]: 0, [Op.not]: null},
-                    longitude: {[Op.ne]: 0, [Op.not]: null},
+                    latitude: { [Op.ne]: 0, [Op.not]: null },
+                    longitude: { [Op.ne]: 0, [Op.not]: null },
                     deleted_at: null,
                 },
             });
-
+            
             for (const fromLocation of pickupLocations) {
                 for (const toLocation of pickupLocations) {
                     if (fromLocation.id === toLocation.id) {
                         continue;
                     }
-
+                    
                     const existingRecord = await PickupLocationDistance.findOne({
                         where: {
                             from_location_id: fromLocation.id,
@@ -246,7 +239,7 @@ class DistanceService extends BaseGeoService {
                     if (existingRecord && rerun !== 'true') {
                         continue;
                     }
-
+                    
                     const distance = await this.fetchDrivingDistance(`${fromLocation.latitude},${fromLocation.longitude}`,
                         `${toLocation.latitude},${toLocation.longitude}`);
 

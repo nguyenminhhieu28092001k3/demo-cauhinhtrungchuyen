@@ -1,6 +1,6 @@
 const {logToFile} = require('../app/Helpers/base.helper')
 module.exports.option = {
-    host: '127.0.0.1',
+    host: 'localhost',
     dialect: 'mysql',
     pool: {
         max: 50,      // Maximum number of connections in pool

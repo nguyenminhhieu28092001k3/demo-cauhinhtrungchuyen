@@ -6,7 +6,6 @@
     "ioredis": "^5.4.1",
     "mysql2": "^3.11.2",
     "open-location-code": "^1.0.3",
-    "p-limit": "^3.1.0",
     "proj4": "^2.15.0",
     "redis": "^4.7.0",
     "sequelize": "^6.37.3",
