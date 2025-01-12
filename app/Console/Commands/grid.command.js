@@ -124,7 +124,7 @@ const argv = yargs
 //node grid.command.js calculateDistances -p 80
 
 // Cần thơ
-// node grid.command.js generate -b "9.9908,10.1041,105.6947,105.8107"
+// node grid.command.js generate -b "9.774,10.431,105.194,106.128"
 // node grid.command.js calculateDistances -p 1681
 // node grid.command.js calculateDistances -p 733
 // node grid.command.js calculateDistances -p 677
