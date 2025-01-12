@@ -88,9 +88,9 @@ class DistanceService extends BaseGeoService {
 
             if (distanceData.length > 0) {
 
-                // await GridCellDistance.bulkCreate(distanceData, {
-                //     updateOnDuplicate: ['distance', 'updated_at'],
-                // });
+                await GridCellDistance.bulkCreate(distanceData, {
+                    updateOnDuplicate: ['distance', 'updated_at'],
+                });
                 console.log(`Saved ${distanceData.length} distance records in bulk.`);
             }
         } catch (error) {
