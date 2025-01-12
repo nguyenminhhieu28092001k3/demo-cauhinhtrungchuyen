@@ -34,8 +34,6 @@ class DistanceService extends BaseGeoService {
     }
 
     async fetchDrivingDistance(origin, destination) {
-
-        return 1;
         switch (process.env.IS_CALL_GET_DISTANCE) {
             case 'GOOGLE_MAP' :
                 return await this.callDistanceGoogle(origin, destination, this.googleApiKey);
@@ -60,8 +58,8 @@ class DistanceService extends BaseGeoService {
             this.limit(async () => {
                 const destination = `${gridCell.latitude},${gridCell.longitude}`;
                 try {
-                    // Delay riêng lẻ từng request
-                    await this.sleep(1000); // Delay 500ms giữa các request
+
+                    await this.sleep(1000);
                     const distance = await this.fetchDrivingDistance(origin, destination);
                     console.log(
                         `Prepared distance data for PickupLocation(${pickupLocation.id}), Distance ${distance} and GridCell(${gridCell.id}), Thời gian: ${new Date(Date.now()).toISOString()}`
